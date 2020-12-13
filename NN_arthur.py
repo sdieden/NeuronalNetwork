@@ -363,7 +363,7 @@ if __name__ == "__main__":
     MSE_train = np.zeros(nombre_d_epoques)
     MSE_verif = np.zeros(nombre_d_epoques)
     for i in range(nombre_d_epoques) :
-      nn = NetworkNeurons(read_csv("projet/winequality-red.csv"),20,1,0.07,epoque= i)
+      nn = NetworkNeurons(read_csv("NeuronalNetwork/winequality-red.csv"),20,1,0.07,epoque= i)
       erreurs_train , erreurs_verif = nn.make_it_happen()
       print('training on generation {} currently working ...{}'.format(i+1,"."*(i%2)+" ",),end = '\r') 
       MSE_train[i] += sum(square(erreurs_train))/(1+i)
@@ -379,7 +379,7 @@ if __name__ == "__main__":
 
   MSE(50)
 
-#test
+
 
     
     

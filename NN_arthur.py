@@ -279,37 +279,42 @@ class NetworkNeurons :
     error = np.zeros(self.n_lignes*self.n_neurons).reshape(self.n_lignes,self.n_neurons)
     y_true = self.data[vin,-1]
     
-    final_error = (y_true - output_end) * self.derivate_activation_sigmoid(output_end)
+    final_error = (y_true  - output_end) * self.derivate_activation_sigmoid(output_end)
     
     if self.bool :
       for i in range(self.n_neurons): #derniere ligne de neurones donc on utilise final_error
-        error[self.n_lignes - 1 , i] += self.__class__.C[0,0,(self.n_neurons-1)-i] * final_error * self.derivate_activation_ReLU(final_error)
+        error[self.n_lignes - 1 , i] += self.__class__.C[0,0,(self.n_neurons-1)-i] * final_error * self.derivate_activation_ReLU(output_int[self.n_lignes-1 , i])
         #ici faire self.n_neurone -1 permet de s'occuper du probleme que l'indexation de matrice commence à O 
 
       if self.n_lignes > 1 :
 
-        for line in range(self.n_lignes) :
+        for line in range(self.n_lignes-1) :
 
           for neuron in range (self.n_neurons) :
             somme = 0
             for poids in range(self.n_neurons) :
-              somme += self.__class__.B[(self.n_lignes-2) - line , (self.n_neurons-1)-neuron,poids]* error[(self.n_lignes-1) - line ,poids]
-            error[(self.n_lignes-1) - line , neuron] += somme * self.derivate_activation_ReLU(output_int[(self.n_lignes-1) - line , neuron])
-      
+              somme += self.__class__.B[(self.n_lignes-2) - line , neuron,poids]* error[(self.n_lignes-1) - line ,poids]
+            error[(self.n_lignes-2) - line , neuron] += somme * self.derivate_activation_ReLU(output_int[(self.n_lignes-2) - line , neuron])
+
+        
     else :
-      for i in range(self.n_neurons):
-        error[self.n_lignes - 1 , i] += (self.__class__.C[0,0,(self.n_neurons-1)-i] * final_error * self.derivate_activation_sigmoid(final_error))
+
+      for i in range(self.n_neurons): #derniere ligne de neurones donc on utilise final_error
+        error[self.n_lignes - 1 , i] += self.__class__.C[0,0,(self.n_neurons-1)-i] * final_error * self.derivate_activation_sigmoid(output_int[self.n_lignes-1 , i])
+        #ici faire self.n_neurone -1 permet de s'occuper du probleme que l'indexation de matrice commence à O 
 
       if self.n_lignes > 1 :
 
-        for line in range(self.n_lignes) :
+        for line in range(self.n_lignes-1) :
 
           for neuron in range (self.n_neurons) :
             somme = 0
             for poids in range(self.n_neurons) :
-              somme += self.__class__.B[(self.n_lignes-2) - line , (self.n_neurons-1)-neuron,poids]* error[(self.n_lignes-1) - line ,poids]
-            error[(self.n_lignes-1) - line , neuron] += somme * self.derivate_activation_sigmoid (output_int[(self.n_lignes-1) - line , neuron])
+              somme += self.__class__.B[(self.n_lignes-2) - line , neuron,poids]* error[(self.n_lignes-1) - line ,poids]
+            error[(self.n_lignes-2) - line , neuron] += somme * self.derivate_activation_sigmoid(output_int[(self.n_lignes-2) - line , neuron])
 
+        
+      
     return error , final_error
 
   
@@ -363,11 +368,14 @@ if __name__ == "__main__":
     MSE_train = np.zeros(nombre_d_epoques)
     MSE_verif = np.zeros(nombre_d_epoques)
     for i in range(nombre_d_epoques) :
-      nn = NetworkNeurons(read_csv("NeuronalNetwork/winequality-red.csv"),20,1,0.07,epoque= i)
+      nn = NetworkNeurons(read_csv("NeuronalNetwork/winequality-red.csv"),20,1,0.1,True,0.7,True,epoque= i)
       erreurs_train , erreurs_verif = nn.make_it_happen()
       print('training on generation {} currently working ...{}'.format(i+1,"."*(i%2)+" ",),end = '\r') 
-      MSE_train[i] += sum(square(erreurs_train))/(1+i)
-      MSE_verif[i] += sum(square(erreurs_verif))/(1+i)
+      
+      #MSE_train[i] += sum(square(erreurs_train))/(i+1) a demander au prof
+      #MSE_verif[i] += sum(square(erreurs_verif))/(i+1)
+      MSE_train[i] += sum(square(erreurs_train))/len(erreurs_train)
+      MSE_verif[i] += sum(square(erreurs_verif))/len(erreurs_verif)
 
     plt.plot(MSE_train,label = "Training")
     plt.plot(MSE_verif,label = "Verification",color = "red")
@@ -375,7 +383,7 @@ if __name__ == "__main__":
     plt.ylabel("MSE")
     plt.title("MSE par époque")
     plt.show()
-    plt.savefig("MSE")
+    plt.savefig("projet/MSE.png")
 
   MSE(50)
 

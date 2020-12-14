@@ -47,6 +47,13 @@ def square (x) :
   else :
     raise ValueError("-----------------ERROR--------------- \n!!! type d'activation invalide, une valeur de type 'list' est attendue !!!\n-----------------ERROR---------------")
 
+def smooth_lr (x, epoques) :
+  """
+  fait que le learning rate change en fonctions des époques en suivant la courbe d'une fonction exponentielle de base epoques et d'exposant (-x)/epoques
+  on divise le tout par 10 pour avoir une valuer entre 0.1 et 0
+  """
+  y = math.pow(epoques,(-x)/epoques) /10
+  return y 
 
 class NetworkNeurons :
   """
@@ -105,7 +112,7 @@ class NetworkNeurons :
 
 
     if epoque == 0 : #pour pas recréer des martices random a chaque génération
-
+      np.random.seed(1)
       if self.gaus :
 
         self.__class__.A = (
@@ -182,8 +189,7 @@ class NetworkNeurons :
           return 1
         elif x< 0 :
           return 0
-
-      
+   
 
   def activation_ReLU (self,x) :
     """
@@ -327,17 +333,17 @@ class NetworkNeurons :
 
     for neurone in range(self.n_neurons) :
 
-      self.__class__.C[0,0,neurone] = self.__class__.C[0,0,neurone] + self.lr * final_error * output_int[self.n_lignes -1,neurone]
+      self.__class__.C[0,0,neurone] = self.__class__.C[0,0,neurone] + self.lr * final_error * output_int[self.n_lignes -2,neurone]
 
       for poids in range(self.args) :
 
         self.__class__.A[0,neurone ,poids] = self.__class__.A[0,neurone ,poids] + self.lr * error[0,neurone] * self.data[vin,poids]
 
-        for line in range (self.n_lignes-1) :
+      for line in range (self.n_lignes-1) :
 
-          for x in range(self.n_neurons) :
+        for x in range(self.n_neurons) :
 
-            self.__class__.B[line,neurone,x] = self.__class__.B[line,neurone,x] + self.lr * error[line +1 ,neurone] * output_int[line,neurone]
+          self.__class__.B[line,neurone,x] = self.__class__.B[line,neurone,x] + self.lr * error[line +1,neurone] * output_int[line,neurone]
 
   def make_it_happen (self) :
     """
@@ -354,8 +360,8 @@ class NetworkNeurons :
     
     return self.liste_erreurs_train, self.liste_erreurs_verif
 
-   
 
+#------testing-------#
 if __name__ == "__main__":
 
   def MSE (nombre_d_epoques) : 
@@ -368,12 +374,10 @@ if __name__ == "__main__":
     MSE_train = np.zeros(nombre_d_epoques)
     MSE_verif = np.zeros(nombre_d_epoques)
     for i in range(nombre_d_epoques) :
-      nn = NetworkNeurons(read_csv("NeuronalNetwork/winequality-red.csv"),20,1,0.1,True,0.7,True,epoque= i)
+      nn = NetworkNeurons(read_csv("NeuronalNetwork/winequality-red.csv"),20,1,smooth_lr(i,nombre_d_epoques),epoque= i)
       erreurs_train , erreurs_verif = nn.make_it_happen()
       print('training on generation {} currently working ...{}'.format(i+1,"."*(i%2)+" ",),end = '\r') 
       
-      #MSE_train[i] += sum(square(erreurs_train))/(i+1) a demander au prof
-      #MSE_verif[i] += sum(square(erreurs_verif))/(i+1)
       MSE_train[i] += sum(square(erreurs_train))/len(erreurs_train)
       MSE_verif[i] += sum(square(erreurs_verif))/len(erreurs_verif)
 
@@ -383,7 +387,7 @@ if __name__ == "__main__":
     plt.ylabel("MSE")
     plt.title("MSE par époque")
     plt.show()
-    plt.savefig("projet/MSE.png")
+    
 
   MSE(50)
 

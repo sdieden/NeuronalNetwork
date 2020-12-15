@@ -281,12 +281,11 @@ class NetworkNeurons :
     return output_int , output_end #retourne un tuple avec en 0 la matrice et en 1 la note du vin
 
     
-  def errors (self,vin) :
+  def errors (self,vin,output_int,output_end) :
     """
     Trouve les ereurs sur tout les poids par rapport a l'erreur sur la note du vin et 
     ajoute à la liste self.list_erreurs la differance entre la vrai note et la note calculée
     """
-    output_int , output_end = self.calculations(vin) 
     error = np.zeros(self.n_lignes*self.n_neurons).reshape(self.n_lignes,self.n_neurons)
     y_true = self.data[vin,-1]
     
@@ -329,12 +328,11 @@ class NetworkNeurons :
     return error , final_error
 
   
-  def weight_update (self,vin) :
+  def weight_update (self,vin, output_int, error, final_error) :
     """
     redéfini tout les poids des 3 matrices pour que nos notes calculées soit plus proche de la valeur recherché 
     """
-    output_int = self.calculations(vin)[0] 
-    error , final_error = self.errors(vin)
+    
 
     for neurone in range(self.n_neurons) :
 
@@ -359,7 +357,10 @@ class NetworkNeurons :
     for vin in range(len(self.data)) :
       
       if vin in range(self.train_n_data) :
-        self.weight_update(vin)
+        output_int, output_end = self.calculations(vin)
+        error , final_error = self.errors(vin,output_int,output_end)
+        self.weight_update(vin,output_int,error,final_error)
+        
       else :
         self.calculations(vin) #pas besoin de faire toute la backpropagation pour la verification
     
@@ -392,6 +393,7 @@ if __name__ == "__main__":
     plt.ylabel("MSE")
     plt.title("MSE par époque")
     plt.show()
+    print(erreurs_train)
     
     
     

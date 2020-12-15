@@ -72,7 +72,7 @@ class NetworkNeurons :
       matrix_data : est la matrice numpy des données utiliser pour configurer le programme avec en derniere colonne les outputs recherchées
       neurons_per_line : est le nombre de neurones désirer par ligne
       nombres_de_lignes_de_neurones : est le nombre de ligne souhaité (defaut 1)
-      learning_rate : est une valeur qui défini la vitesse d'apprentissage (defaut 0.01)
+      learning_rate : est une valeur qui défini la vitesse d'apprentissage 
       activation_interne_de_type_ReLu : est un parametre qui défini si entre les couches de neurones (sauf pour la derniere) on désire utiliser la fonction ReLU plustot que la sigmoid (defaut = False)
       pourcentage_de_data_pour_le_training : Défini le pourcentage de data utilisée pour l'entrainement (defaut = 0.8)
       epoque = défini combien de fois on a fait tourner avec le meme set de data
@@ -84,6 +84,7 @@ class NetworkNeurons :
         self.args donne le nombre de variables initiales
         self.liste_erreurs_... creer la liste de differance entre la vrai note du vin et notre note calculée
         self...._n_data donne exactement le nombre de echantillions (ici du vin) alloué au training ou a la vérification
+        self.y_true... servent pour qu'on 
 
     Lors de la 1ere epoque on va creer 
 
@@ -99,6 +100,7 @@ class NetworkNeurons :
     self.liste_erreurs_verif = []
     self.gaus = boolien(random_sous_forme_de_gaussienne)
     self.epoque = epoque
+    
 
 
     if pourcentage_de_data_pour_le_training < 1 : #au cas ou on met comme argument du pourcentage un nombre qui est entre 0 et 100 au lieu d'etre entre 0 et 1
@@ -107,6 +109,9 @@ class NetworkNeurons :
       self.train_n_data = int(round((pourcentage_de_data_pour_le_training/100) * len(self.data), 0))
 
     self.verif_n_data = int(len(self.data) - self.train_n_data)
+
+    self.y_true_train = self.data[:self.train_n_data,-1]
+    self.y_true_verif = self.data[self.train_n_data:self.verif_n_data,-1]
 
       #_________CREATIONS INITIALE DES MATRICES DE POIDS___________#
 
@@ -358,7 +363,7 @@ class NetworkNeurons :
       else :
         self.calculations(vin) #pas besoin de faire toute la backpropagation pour la verification
     
-    return self.liste_erreurs_train, self.liste_erreurs_verif
+    return self.liste_erreurs_train, self.liste_erreurs_verif, self.y_true_train , self.y_true_verif
 
 
 #------testing-------#
@@ -375,7 +380,7 @@ if __name__ == "__main__":
     MSE_verif = np.zeros(nombre_d_epoques)
     for i in range(nombre_d_epoques) :
       nn = NetworkNeurons(read_csv("NeuronalNetwork/winequality-red.csv"),20,1,smooth_lr(i,nombre_d_epoques),epoque= i)
-      erreurs_train , erreurs_verif = nn.make_it_happen()
+      erreurs_train , erreurs_verif, y_true_train, y_true_verif = nn.make_it_happen()
       print('training on generation {} currently working ...{}'.format(i+1,"."*(i%2)+" ",),end = '\r') 
       
       MSE_train[i] += sum(square(erreurs_train))/len(erreurs_train)
@@ -387,6 +392,7 @@ if __name__ == "__main__":
     plt.ylabel("MSE")
     plt.title("MSE par époque")
     plt.show()
+    
     
 
   MSE(50)

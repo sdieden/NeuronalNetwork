@@ -111,7 +111,7 @@ class NetworkNeurons :
     self.verif_n_data = int(len(self.data) - self.train_n_data)
 
     self.y_true_train = self.data[:self.train_n_data,-1]
-    self.y_true_verif = self.data[self.train_n_data:self.verif_n_data,-1]
+    self.y_true_verif = self.data[self.train_n_data:len(self.data),-1]
 
       #_________CREATIONS INITIALE DES MATRICES DE POIDS___________#
 
@@ -392,6 +392,7 @@ if __name__ == "__main__":
     plt.ylabel("MSE")
     plt.title("MSE par époque")
     plt.show()
+    
     
     
 

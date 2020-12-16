@@ -383,15 +383,29 @@ if __name__ == "__main__":
       nn = NetworkNeurons(read_csv("NeuronalNetwork/winequality-red.csv"),20,1,smooth_lr(i,nombre_d_epoques),epoque= i)
       erreurs_train , erreurs_verif, y_true_train, y_true_verif = nn.make_it_happen()
       print('training on generation {} currently working ...{}'.format(i+1,"."*(i%2)+" ",),end = '\r') 
-      
+      liste1=[]
+      hist=[]
       MSE_train[i] += sum(square(erreurs_train))/len(erreurs_train)
       MSE_verif[i] += sum(square(erreurs_verif))/len(erreurs_verif)
-
+      liste1=erreurs_train/y_true_train
+      liste1=np.append(liste1,erreurs_verif/y_true_verif)
+      y_true=np.append(y_true_train,y_true_verif)
+    plt.Figure()
     plt.plot(MSE_train,label = "Training")
     plt.plot(MSE_verif,label = "Verification",color = "red")
     plt.xlabel("epoques")
     plt.ylabel("MSE")
     plt.title("MSE par époque")
+    
+    plt.subplot(2,2,2)
+    plt.hist(liste1,bins=6,alpha=0.3)
+    plt.title('histogramme des différences relatives')
+
+    plt.subplot(2,2,3)
+    plt.scatter(liste1,y_true)
+    plt.title('erreurs relatives vs qualite reelles du vin')
+    plt.xlabel('erreurs relatives')
+    plt.ylabel('qualité réelles des vins')
     plt.show()
     print(erreurs_train)
     
